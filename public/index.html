@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dublagame — dubla vídeo do YouTube</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🎙️</text></svg>" />
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="hero">
+        <h1>🎙️ Dubla<span>game</span></h1>
+        <p>Cola o link de um vídeo do YouTube, escolhe teu personagem e dubla lendo a legenda em karaokê. No fim sai o vídeo com a tua voz.</p>
+      </header>
+
+      <form id="form" class="card">
+        <label for="url">Link do YouTube</label>
+        <div class="row">
+          <input id="url" name="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" required />
+          <button id="go" type="submit">Preparar</button>
+        </div>
+        <p class="hint">Vídeo de até 15 min, com legenda automática ou manual. A gente separa as falas por personagem — dá pra corrigir na mão depois.</p>
+        <p id="status" class="status" hidden></p>
+      </form>
+
+      <section id="recent" hidden>
+        <h2>Já preparados</h2>
+        <ul id="list" class="list"></ul>
+      </section>
+
+      <ol class="steps">
+        <li><b>1.</b> Manda o link — baixamos vídeo e legenda com tempo.</li>
+        <li><b>2.</b> Escolhe personagem (tem mais de um? chama a galera).</li>
+        <li><b>3.</b> Lê no karaokê enquanto grava. Cada fala vale ponto.</li>
+        <li><b>4.</b> Renderiza e baixa o vídeo dublado.</li>
+      </ol>
+    </main>
+    <script src="/assets/home.js"></script>
+  </body>
+</html>

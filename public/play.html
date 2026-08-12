@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dublagame — sala de dublagem</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🎙️</text></svg>" />
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body class="play">
+    <header class="topbar">
+      <a href="/" class="back">← trocar vídeo</a>
+      <h1 id="title">carregando…</h1>
+      <span id="lang" class="tag"></span>
+    </header>
+
+    <main class="stage">
+      <section class="screen">
+        <div class="videobox">
+          <video id="video" playsinline preload="auto"></video>
+          <div id="hud" class="hud" hidden>
+            <div class="hud-left"><span id="whoBadge" class="badge"></span></div>
+            <div class="hud-right">
+              <span class="score" id="score">0</span>
+              <span class="combo" id="combo"></span>
+            </div>
+          </div>
+          <div id="countdown" class="countdown" hidden></div>
+          <div id="karaoke" class="karaoke">
+            <p class="cue-now" id="cueNow">Escolhe teu personagem aí do lado e manda ver.</p>
+            <p class="cue-next" id="cueNext"></p>
+            <div class="timerbar"><i id="timerFill"></i></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="start" class="primary" disabled>🎤 Gravar dublagem</button>
+          <button id="stop" hidden>⏹ Parar</button>
+          <label class="vol">áudio original <input id="vol" type="range" min="0" max="100" value="55" /></label>
+          <label class="chk"><input id="practice" type="checkbox" /> modo treino (não grava)</label>
+        </div>
+        <p id="msg" class="status" hidden></p>
+      </section>
+
+      <aside class="side">
+        <div class="card">
+          <h2>Quem vai dublar</h2>
+          <label class="fld">Teu nome <input id="player" maxlength="24" placeholder="Junin" /></label>
+          <div id="cast" class="cast"></div>
+          <p class="hint">Vários personagens no vídeo? Cada um faz uma passada e no fim a gente junta tudo num vídeo só.</p>
+        </div>
+
+        <div class="card">
+          <h2>Placar</h2>
+          <ol id="board" class="board"><li class="empty">ninguém dublou ainda</li></ol>
+          <button id="render" class="primary" disabled>🎬 Gerar vídeo dublado</button>
+          <p id="renderMsg" class="status" hidden></p>
+          <video id="result" controls hidden></video>
+          <a id="download" class="dl" hidden download>⬇ baixar mp4</a>
+        </div>
+
+        <details class="card">
+          <summary>Ajustar falas e personagens</summary>
+          <div id="editor" class="editor"></div>
+          <button id="saveCast">Salvar elenco</button>
+        </details>
+      </aside>
+    </main>
+    <script src="/assets/game.js"></script>
+  </body>
+</html>
