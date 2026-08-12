@@ -147,9 +147,13 @@ function paint(t) {
   const upcoming = cues.filter((c) => c.start > t && mine.has(c.char))[0];
   $("#cueNext").textContent = upcoming && upcoming !== active ? `→ ${upcoming.text}` : "";
 
-  // abaixa o original enquanto o teu personagem fala
+  // silencia o original enquanto o teu personagem fala: a voz dele nao pode
+  // competir com a tua nem vazar no microfone. Margem cobre o rabo da fala.
   const base = Number($("#vol").value) / 100;
-  video.volume = active && mine.has(active.char) && !$("#practice").checked ? base * 0.25 : base;
+  const mineTalking = data.cues.some(
+    (c) => mine.has(c.char) && t >= c.start - 0.25 && t <= c.end + 0.25,
+  );
+  video.volume = mineTalking && !$("#practice").checked ? 0 : base;
 }
 
 let rafId = 0;

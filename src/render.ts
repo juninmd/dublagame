@@ -8,8 +8,8 @@ function duckWindows(cues: Cue[], chars: Set<string>) {
   const wins: [number, number][] = [];
   for (const c of cues.filter((c) => chars.has(c.char)).sort((a, b) => a.start - b.start)) {
     const last = wins[wins.length - 1];
-    const s = Math.max(0, c.start - 0.15);
-    const e = c.end + 0.15;
+    const s = Math.max(0, c.start - 0.25);
+    const e = c.end + 0.25;
     if (last && s - last[1] < 0.4) last[1] = Math.max(last[1], e);
     else wins.push([s, e]);
   }
@@ -21,11 +21,12 @@ function buildFilter(cues: Cue[], takes: TakeInput[]) {
   const wins = duckWindows(cues, dubbed);
   const parts: string[] = [];
 
-  // audio original abaixado enquanto o jogador fala
+  // A voz original do personagem dublado sai por completo — sobra so a tua.
+  // Fora dessas janelas o audio original (outros personagens, trilha) fica inteiro.
   const expr = wins.length
     ? wins.map(([s, e]) => `between(t,${s.toFixed(2)},${e.toFixed(2)})`).join("+")
     : "0";
-  parts.push(`[0:a]volume=volume='if(${expr},0.14,1.0)':eval=frame[orig]`);
+  parts.push(`[0:a]volume=volume='if(${expr},0.0,1.0)':eval=frame[orig]`);
 
   const labels = ["[orig]"];
   takes.forEach((t, k) => {
