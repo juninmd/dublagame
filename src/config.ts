@@ -11,7 +11,7 @@ export const YTDLP_COOKIES = process.env.YTDLP_COOKIES ?? "";
 export const AI = {
   baseUrl: process.env.OPENAI_BASE_URL ?? "",
   key: process.env.OPENAI_API_KEY ?? "",
-  model: process.env.OPENAI_MODEL ?? "cloud/gemma3",
+  model: process.env.OPENAI_MODEL ?? "cloud/auto",
   enabled: Boolean(process.env.OPENAI_BASE_URL && process.env.OPENAI_API_KEY),
 };
 
