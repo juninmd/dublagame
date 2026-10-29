@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, rmSync, statSync } from "node:fs";
 import { PORT, ensureDirs, rendersDir, takesDir, videoDir } from "./config";
 import { db, getVideo, listVideos, setVideo, upsertVideo, type Character, type Cue } from "./db";
 import { ingestAsync, youtubeId } from "./pipeline";
@@ -143,7 +143,11 @@ app.post("/api/videos/:id/takes", async (c) => {
 });
 
 app.delete("/api/takes/:id", (c) => {
-  db.query("DELETE FROM takes WHERE id = ?").run(c.req.param("id"));
+  const row = db.query("DELETE FROM takes WHERE id = ? RETURNING file").get(c.req.param("id")) as
+    | { file: string }
+    | null;
+  // Sem isso o .webm ficava orfao no PVC para sempre.
+  if (row) rmSync(row.file, { force: true });
   return c.json({ ok: true });
 });
 
