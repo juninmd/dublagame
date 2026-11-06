@@ -21,3 +21,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
   CMD curl -fsS http://127.0.0.1:3000/healthz || exit 1
 
 CMD ["bun", "src/index.ts"]
+
+# executa app sem privilegio (DS-0002)
+RUN groupadd -g 10001 app && useradd -u 10001 -m -g app -s /bin/sh app
+USER app
