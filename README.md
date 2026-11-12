@@ -60,14 +60,14 @@ tela, que resolve o caso multi-personagem sem IA.
 
 ## Deploy
 
-Imagem `ghcr.io/juninmd/dublagame:latest`, chart em `app-charts/dublagame`
+Imagem `ghcr.io/juninmd/dublagame-app:latest`, chart em `app-charts/dublagame`
 (Deployment + Service + Ingress + PVC 5Gi), Application no root-app do ArgoCD.
 Como o CI do GitHub Actions segue bloqueado por billing, a imagem vai a mão:
 
 ```powershell
 gh auth token | docker login ghcr.io -u juninmd --password-stdin
-docker build --platform linux/amd64 -t ghcr.io/juninmd/dublagame:latest .
-docker push ghcr.io/juninmd/dublagame:latest
+docker build --platform linux/amd64 -t ghcr.io/juninmd/dublagame-app:latest .
+docker push ghcr.io/juninmd/dublagame-app:latest
 ssh ubuntu@201.54.21.165 "sudo -n k3s kubectl -n dublagame rollout restart deploy/dublagame"
 ```
 
