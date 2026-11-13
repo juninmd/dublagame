@@ -1,5 +1,9 @@
 # 🎙️ dublagame
 
+<p align="center">
+  <img src="docs/readme/hero.png" alt="Banner ilustrativo do dublagame (mockup com dados fictícios)" width="100%">
+</p>
+
 **Duble vídeos do YouTube em karaokê: a legenda acende palavra por palavra, o navegador grava sua voz e o app devolve um MP4 com a sua dublagem mixada.**
 
 App web auto-hospedado que baixa vídeo e legenda com `yt-dlp`, separa as falas por personagem, grava cada jogador no `MediaRecorder` e monta o vídeo final com `ffmpeg`. Serve para brincar de dublagem com os amigos, sem instalar nada além de um navegador.
@@ -204,6 +208,18 @@ Ele precisa de rede (baixa um vídeo real) e escreve no `DATA_DIR` do servidor. 
 | `security.yml` | Varredura de segurança semanal e no push para `master`. |
 | `docker.yml` | Build e push da imagem no GHCR. |
 | `dependabot-auto-merge.yml` | Auto-merge de PRs do Dependabot quando todos os checks passam. |
+
+## Imagens
+
+> [!NOTE]
+> **Mockups ilustrativos.** As telas abaixo foram geradas em HTML com dados fictícios (Playwright) e não são capturas de uma instalação real.
+
+<p align="center">
+  <img src="docs/readme/studio.png" alt="Estúdio de dublagem — mockup ilustrativo com dados fictícios" width="100%">
+  <br>
+  <sub>Estúdio de dublagem — dados fictícios.</sub>
+</p>
+
 
 ## Limitações
 
