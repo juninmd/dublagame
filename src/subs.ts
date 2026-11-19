@@ -36,7 +36,8 @@ export function parseJson3(raw: string): Cue[] {
   return mergeShort(cues);
 }
 
-const TS = /(\d{2}):(\d{2}):(\d{2})[.,](\d{3})/g;
+// WebVTT permite omitir as horas (MM:SS.mmm); o SRT sempre traz HH:MM:SS,mmm.
+const TS = /(?:(\d{1,2}):)?(\d{2}):(\d{2})[.,](\d{3})/g;
 
 /** Fallback para legendas manuais em .vtt/.srt (sem timing por palavra). */
 export function parseVtt(raw: string): Cue[] {
@@ -46,7 +47,7 @@ export function parseVtt(raw: string): Cue[] {
     const timeLine = lines.find((l) => l.includes("-->"));
     if (!timeLine) continue;
     const stamps = [...timeLine.matchAll(TS)].map(
-      (m) => +m[1] * 3600 + +m[2] * 60 + +m[3] + +m[4] / 1000,
+      (m) => +(m[1] ?? 0) * 3600 + +m[2] * 60 + +m[3] + +m[4] / 1000,
     );
     if (stamps.length < 2) continue;
     const text = clean(
