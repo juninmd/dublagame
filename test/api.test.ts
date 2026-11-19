@@ -1,0 +1,44 @@
+import { afterAll, beforeAll, expect, test } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+const dir = mkdtempSync(join(tmpdir(), "dublagame-"));
+process.env.DATA_DIR = dir;
+
+let app: { fetch: (r: Request) => Response | Promise<Response> };
+let db: typeof import("../src/db");
+
+beforeAll(async () => {
+  db = await import("../src/db");
+  app = (await import("../src/index")).default;
+  db.upsertVideo("vid00000001", "https://youtu.be/vid00000001");
+  db.setVideo("vid00000001", {
+    status: "ready",
+    characters: JSON.stringify([{ id: "c1", name: "A", color: "#fff" }]),
+    cues: JSON.stringify([{ i: 0, start: 0, end: 1, text: "oi", words: [], char: "c1" }]),
+  });
+});
+afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+const put = (body: BodyInit, type = "application/json") =>
+  app.fetch(new Request("http://x/api/videos/vid00000001/cast", { method: "PUT", body, headers: { "content-type": type } }));
+
+test("PUT cast com JSON invalido responde 400 em vez de 500", async () => {
+  expect((await put("{nope")).status).toBe(400);
+  expect((await put("[1]")).status).toBe(400);
+});
+
+test("PUT cast ignora nomes que nao sao string", async () => {
+  const res = await put(JSON.stringify({ names: { c1: 42, c2: "  Bia  " } }));
+  expect(res.status).toBe(200);
+  const { characters } = (await res.json()) as { characters: { id: string; name: string }[] };
+  expect(characters.map((c) => c.name)).toEqual(["A", "Bia"]);
+});
+
+test("POST takes sem multipart responde 400 em vez de 500", async () => {
+  const res = await app.fetch(
+    new Request("http://x/api/videos/vid00000001/takes", { method: "POST", body: "x", headers: { "content-type": "text/plain" } }),
+  );
+  expect(res.status).toBe(400);
+});
