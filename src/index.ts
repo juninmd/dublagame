@@ -7,6 +7,8 @@ import { renderAsync, type TakeInput } from "./render";
 import { mkChar } from "./characters";
 
 const app = new Hono();
+/** NaN/Infinity viram NULL no SQLite e quebram o render; campo invalido vale 0. */
+const finiteOr0 = (v: FormDataEntryValue | null) => (Number.isFinite(Number(v)) ? Number(v) : 0);
 const rid = () => crypto.randomUUID().slice(0, 8);
 
 /** Streaming com Range — sem isso o <video> nao busca posicao no Chrome. */
@@ -43,8 +45,8 @@ app.get("/assets/:file", (c) => {
 });
 
 app.post("/api/videos", async (c) => {
-  const { url } = (await c.req.json()) as { url?: string };
-  const id = youtubeId(url ?? "");
+  const { url } = ((await c.req.json().catch(() => null)) ?? {}) as { url?: string };
+  const id = youtubeId(typeof url === "string" ? url : "");
   if (!id) return c.json({ error: "URL do YouTube invalida" }, 400);
 
   const existing = getVideo(id);
@@ -134,8 +136,8 @@ app.post("/api/videos/:id/takes", async (c) => {
     String(form.get("player") ?? "Jogador").slice(0, 24),
     JSON.stringify(chars),
     file,
-    Number(form.get("offset") ?? 0),
-    Number(form.get("score") ?? 0),
+    finiteOr0(form.get("offset")),
+    finiteOr0(form.get("score")),
     String(form.get("detail") ?? "[]").slice(0, 20000),
     Date.now(),
   );
@@ -154,8 +156,12 @@ app.delete("/api/takes/:id", (c) => {
 app.post("/api/videos/:id/render", async (c) => {
   const v = getVideo(c.req.param("id"));
   if (v?.status !== "ready" || !v.cues) return c.json({ error: "video nao esta pronto" }, 400);
-  const { takeIds } = (await c.req.json()) as { takeIds?: string[] };
-  if (!takeIds?.length) return c.json({ error: "nenhuma dublagem selecionada" }, 400);
+  const body = ((await c.req.json().catch(() => null)) ?? {}) as { takeIds?: unknown };
+  // O SQLite limita as variaveis da query e ids nao-string nao existem: filtra e limita antes do IN (...).
+  const takeIds = Array.isArray(body.takeIds)
+    ? body.takeIds.filter((t): t is string => typeof t === "string").slice(0, 100)
+    : [];
+  if (!takeIds.length) return c.json({ error: "nenhuma dublagem selecionada" }, 400);
 
   const rows = db
     .query(

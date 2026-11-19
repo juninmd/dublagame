@@ -192,6 +192,8 @@ O manifesto de Kubernetes fica no repositório `app-charts`, pasta `dublagame` (
 
 ## Testes e CI
 
+Os testes unitários (parsers de legenda, sem rede) rodam com `bun test`.
+
 O smoke E2E joga uma partida de verdade: chama a API, espera o vídeo ficar `ready`, abre o Chromium com microfone falso, verifica o karaokê, grava, confere a nota, envia o take e renderiza o MP4.
 
 ```bash
