@@ -82,10 +82,15 @@ app.get("/api/videos/:id", (c) => {
 app.put("/api/videos/:id/cast", async (c) => {
   const v = getVideo(c.req.param("id"));
   if (!v?.cues) return c.json({ error: "nao encontrado" }, 404);
-  const body = (await c.req.json()) as { names?: Record<string, string>; assign?: Record<string, string> };
+  const body = (await c.req.json().catch(() => null)) as {
+    names?: Record<string, unknown>;
+    assign?: Record<string, string>;
+  } | null;
+  if (!body || typeof body !== "object" || Array.isArray(body)) return c.json({ error: "corpo invalido" }, 400);
 
   let characters = JSON.parse(v.characters ?? "[]") as Character[];
   for (const [id, name] of Object.entries(body.names ?? {})) {
+    if (typeof name !== "string") continue;
     const clean = name.trim().slice(0, 24);
     if (!clean) continue;
     const found = characters.find((x) => x.id === id);
@@ -112,7 +117,8 @@ app.post("/api/videos/:id/takes", async (c) => {
   const v = getVideo(c.req.param("id"));
   if (v?.status !== "ready") return c.json({ error: "video nao esta pronto" }, 400);
 
-  const form = await c.req.formData();
+  const form = await c.req.formData().catch(() => null);
+  if (!form) return c.json({ error: "corpo multipart invalido" }, 400);
   const audio = form.get("audio");
   if (!(audio instanceof File) || audio.size === 0) return c.json({ error: "audio ausente" }, 400);
   if (audio.size > 120 * 1024 * 1024) return c.json({ error: "audio grande demais" }, 413);
