@@ -6,17 +6,20 @@ import { parseJson3, parseVtt } from "./subs";
 
 const SUB_LANGS = "pt-BR,pt,pt-orig,en,en-orig";
 
+const ID_RE = /^[\w-]{11}$/;
+
 export function youtubeId(input: string): string | null {
   const s = input.trim();
-  if (/^[\w-]{11}$/.test(s)) return s;
+  if (ID_RE.test(s)) return s;
   try {
     const u = new URL(s);
-    if (u.hostname === "youtu.be") return u.pathname.slice(1, 12) || null;
-    if (!/(^|\.)youtube\.com$/.test(u.hostname)) return null;
-    const v = u.searchParams.get("v");
-    if (v) return v.slice(0, 11);
-    const m = u.pathname.match(/\/(shorts|embed|live)\/([\w-]{11})/);
-    return m ? m[2] : null;
+    let id: string | undefined;
+    if (u.hostname === "youtu.be") id = u.pathname.slice(1, 12);
+    else if (/(^|\.)youtube\.com$/.test(u.hostname)) {
+      id = u.searchParams.get("v")?.slice(0, 11) || u.pathname.match(/\/(shorts|embed|live)\/([\w-]{11})/)?.[2];
+    }
+    // the id names a directory under DATA_DIR: anything but 11 id chars (e.g. "../..") must not get through
+    return id && ID_RE.test(id) ? id : null;
   } catch {
     return null;
   }
