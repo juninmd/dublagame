@@ -24,6 +24,16 @@ describe("parseVtt", () => {
     expect(cues).toHaveLength(1);
     expect(cues[0].words.map((w) => w.t)).toEqual([0, 1, 2, 3]);
   });
+  test("mantem linhas de fala so com numeros; so o identificador antes do tempo e descartado", () => {
+    const cues = parseVtt("WEBVTT\n\n7\n00:00:01.000 --> 00:00:04.000\nO ano foi\n1999\n\n00:00:05.000 --> 00:00:07.000\n42");
+    expect(cues.map((c) => c.text)).toEqual(["O ano foi 1999", "42"]);
+  });
+
+  test("decodifica as entidades do WebVTT em vez de mostrar &amp; na tela", () => {
+    const cues = parseVtt("WEBVTT\n\n00:00:01.000 --> 00:00:04.000\nTom &amp; Jerry &lt;3&nbsp;ok &#39;sim&#x27;");
+    expect(cues[0].text).toBe("Tom & Jerry <3 ok 'sim'");
+    expect(cues[0].words.map((w) => w.w)).toEqual(["Tom", "&", "Jerry", "<3", "ok", "'sim'"]);
+  });
 });
 
 describe("parseJson3", () => {

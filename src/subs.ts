@@ -39,22 +39,35 @@ export function parseJson3(raw: string): Cue[] {
 // WebVTT permite omitir as horas (MM:SS.mmm); o SRT sempre traz HH:MM:SS,mmm.
 const TS = /(?:(\d{1,2}):)?(\d{2}):(\d{2})[.,](\d{3})/g;
 
+// Entidades que o WebVTT define, mais as numericas (&#39; aparece em legendas do YouTube).
+const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", nbsp: "\u00a0", lrm: "\u200e", rlm: "\u200f", quot: '"', apos: "'" };
+const decodeEntities = (s: string) =>
+  s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e: string) => {
+    if (e[0] !== "#") return ENTITIES[e.toLowerCase()] ?? m;
+    const code = e[1] === "x" || e[1] === "X" ? Number.parseInt(e.slice(2), 16) : Number(e.slice(1));
+    return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : m;
+  });
+
 /** Fallback para legendas manuais em .vtt/.srt (sem timing por palavra). */
 export function parseVtt(raw: string): Cue[] {
   const cues: Cue[] = [];
   for (const block of raw.replace(/\r/g, "").split(/\n{2,}/)) {
     const lines = block.split("\n").filter(Boolean);
-    const timeLine = lines.find((l) => l.includes("-->"));
-    if (!timeLine) continue;
+    const at = lines.findIndex((l) => l.includes("-->"));
+    if (at < 0) continue;
+    const timeLine = lines[at];
     const stamps = [...timeLine.matchAll(TS)].map(
       (m) => +(m[1] ?? 0) * 3600 + +m[2] * 60 + +m[3] + +m[4] / 1000,
     );
     if (stamps.length < 2) continue;
+    // So o que vem antes do tempo e identificador/cabecalho; uma fala "1999" e texto.
     const text = clean(
-      lines
-        .filter((l) => l !== timeLine && !/^\d+$/.test(l) && !l.startsWith("WEBVTT"))
-        .join(" ")
-        .replace(/<[^>]+>/g, ""),
+      decodeEntities(
+        lines
+          .slice(at + 1)
+          .join(" ")
+          .replace(/<[^>]+>/g, ""),
+      ),
     );
     if (!text) continue;
     const [start, end] = stamps;
