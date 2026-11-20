@@ -42,3 +42,24 @@ test("POST takes sem multipart responde 400 em vez de 500", async () => {
   );
   expect(res.status).toBe(400);
 });
+
+const range = (value: string) =>
+  app.fetch(new Request("http://x/assets/app.css", { headers: { range: value } }));
+
+test("Range de sufixo (bytes=-N) entrega os ultimos N bytes, como manda a RFC 9110", async () => {
+  const full = await (await app.fetch(new Request("http://x/assets/app.css"))).text();
+  const size = Buffer.byteLength(full);
+  const res = await range("bytes=-10");
+  expect(res.status).toBe(206);
+  expect(res.headers.get("content-range")).toBe(`bytes ${size - 10}-${size - 1}/${size}`);
+  expect(await res.text()).toBe(full.slice(-10));
+  // sufixo maior que o arquivo entrega o arquivo inteiro; sufixo zero nao e satisfazivel
+  expect((await range(`bytes=-${size + 50}`)).headers.get("content-range")).toBe(`bytes 0-${size - 1}/${size}`);
+  expect((await range("bytes=-0")).status).toBe(416);
+});
+
+test("Range com inicio e fim continua igual", async () => {
+  const res = await range("bytes=0-4");
+  expect(res.status).toBe(206);
+  expect((await res.text()).length).toBe(5);
+});
