@@ -43,6 +43,10 @@ async function poll(id) {
   $("#go").disabled = false;
 }
 
+// O titulo vem do YouTube (qualquer pessoa escolhe): escapa antes do innerHTML.
+const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (ch) => ESC[ch]);
+
 const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 
 fetch("/api/videos")
@@ -54,9 +58,9 @@ fetch("/api/videos")
     $("#list").innerHTML = ready
       .map(
         (r) =>
-          `<li><a href="/jogar/${r.id}"><img src="https://i.ytimg.com/vi/${r.id}/mqdefault.jpg" alt="" loading="lazy" /><span>${
-            r.title ?? r.id
-          }</span><em>${mmss(r.duration ?? 0)}</em></a></li>`,
+          `<li><a href="/jogar/${esc(r.id)}"><img src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg" alt="" loading="lazy" /><span>${esc(
+            r.title ?? r.id,
+          )}</span><em>${mmss(r.duration ?? 0)}</em></a></li>`,
       )
       .join("");
   })

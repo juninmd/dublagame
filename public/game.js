@@ -7,6 +7,9 @@ let mine = new Set();
 let session = null; // { rec, chunks, samples, offset, cursor, score[], combo }
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// Titulo/legenda vem do YouTube e nomes/jogador de qualquer visitante: nunca entram crus no innerHTML.
+const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (ch) => ESC[ch]);
 const charById = (id) => data.characters.find((c) => c.id === id);
 const msg = (el, text, kind = "info") => {
   el.hidden = !text;
@@ -38,9 +41,9 @@ function renderCast() {
 
   $("#cast").innerHTML = data.characters
     .map(
-      (c) => `<label class="chip" style="--c:${c.color}">
-        <input type="checkbox" value="${c.id}" ${mine.has(c.id) ? "checked" : ""} />
-        <b>${c.name}</b><em>${counts.get(c.id) ?? 0} falas</em></label>`,
+      (c) => `<label class="chip" style="--c:${esc(c.color)}">
+        <input type="checkbox" value="${esc(c.id)}" ${mine.has(c.id) ? "checked" : ""} />
+        <b>${esc(c.name)}</b><em>${counts.get(c.id) ?? 0} falas</em></label>`,
     )
     .join("");
 
@@ -60,9 +63,9 @@ function renderEditor() {
       (c) => `<div class="line">
         <span class="t">${c.start.toFixed(1)}s</span>
         <select data-i="${c.i}">${data.characters
-          .map((ch) => `<option value="${ch.id}" ${ch.id === c.char ? "selected" : ""}>${ch.name}</option>`)
+          .map((ch) => `<option value="${esc(ch.id)}" ${ch.id === c.char ? "selected" : ""}>${esc(ch.name)}</option>`)
           .join("")}<option value="__new">+ novo personagem</option></select>
-        <span class="txt">${c.text}</span>
+        <span class="txt">${esc(c.text)}</span>
       </div>`,
     )
     .join("");
@@ -116,13 +119,13 @@ function paint(t) {
     now.className = `cue-now ${isMine ? "mine" : "other"}`;
     now.style.setProperty("--c", ch?.color ?? "#fff");
     now.innerHTML =
-      (isMine ? "" : `<span class="who">${ch?.name}: </span>`) +
+      (isMine ? "" : `<span class="who">${esc(ch?.name)}: </span>`) +
       active.words
         .map((w, k) => {
           const nextT = active.words[k + 1]?.t ?? active.end;
           const on = t >= w.t - 0.05;
           const cur = on && t < nextT;
-          return `<span class="w ${on ? "on" : ""} ${cur ? "cur" : ""}">${w.w}</span>`;
+          return `<span class="w ${on ? "on" : ""} ${cur ? "cur" : ""}">${esc(w.w)}</span>`;
         })
         .join(" ");
     const p = clamp((t - active.start) / Math.max(active.end - active.start, 0.1), 0, 1);
@@ -134,8 +137,8 @@ function paint(t) {
     const isMine = mine.has(next.char);
     now.className = "cue-now waiting";
     now.innerHTML = isMine
-      ? `<span class="prep">tua vez em ${inSec.toFixed(1)}s</span><br />${next.text}`
-      : `<span class="prep">${ch?.name} fala em ${inSec.toFixed(1)}s</span>`;
+      ? `<span class="prep">tua vez em ${inSec.toFixed(1)}s</span><br />${esc(next.text)}`
+      : `<span class="prep">${esc(ch?.name)} fala em ${inSec.toFixed(1)}s</span>`;
     $("#timerFill").style.width = `${clamp(1 - inSec / 3, 0, 1) * 100}%`;
     $("#timerFill").className = isMine ? "prep" : "";
   } else {
@@ -344,12 +347,12 @@ function renderBoard() {
     .sort((a, b) => b.score - a.score)
     .map(
       (t, k) => `<li>
-        <input type="checkbox" class="pick" value="${t.id}" checked />
+        <input type="checkbox" class="pick" value="${esc(t.id)}" checked />
         <span class="pos">${k + 1}º</span>
-        <b>${t.player}</b>
-        <em>${t.characters.map((c) => charById(c)?.name ?? c).join(", ")}</em>
+        <b>${esc(t.player)}</b>
+        <em>${esc(t.characters.map((c) => charById(c)?.name ?? c).join(", "))}</em>
         <span class="pts">${t.score ?? 0}</span>
-        <button class="del" data-id="${t.id}" title="apagar">✕</button>
+        <button class="del" data-id="${esc(t.id)}" title="apagar">✕</button>
       </li>`,
     )
     .join("");
