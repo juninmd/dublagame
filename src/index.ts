@@ -20,8 +20,14 @@ function serveFile(path: string, req: Request, type: string) {
   if (!range) return new Response(Bun.file(path), { headers: { ...base, "content-length": String(size) } });
 
   const m = range.match(/bytes=(\d*)-(\d*)/);
-  const start = m?.[1] ? Number(m[1]) : 0;
-  const end = m?.[2] ? Math.min(Number(m[2]), size - 1) : size - 1;
+  let start = m?.[1] ? Number(m[1]) : 0;
+  let end = m?.[2] ? Math.min(Number(m[2]), size - 1) : size - 1;
+  if (m && !m[1] && m[2]) {
+    // "bytes=-N" pede os ultimos N bytes, nao os primeiros; "bytes=-0" nao e satisfazivel.
+    const suffix = Number(m[2]);
+    start = Math.max(0, size - suffix);
+    end = suffix > 0 ? size - 1 : -1;
+  }
   if (start >= size || start > end) {
     return new Response("range", { status: 416, headers: { "content-range": `bytes */${size}` } });
   }
