@@ -17,12 +17,13 @@ function serveFile(path: string, req: Request, type: string) {
   const size = statSync(path).size;
   const range = req.headers.get("range");
   const base = { "content-type": type, "accept-ranges": "bytes", "cache-control": "no-cache" };
-  if (!range) return new Response(Bun.file(path), { headers: { ...base, "content-length": String(size) } });
+  // Range invalido (outra unidade, sem digitos, varias faixas) e ignorado: 200 com o arquivo inteiro (RFC 9110).
+  const m = range?.match(/^bytes=(\d*)-(\d*)$/);
+  if (!m || (!m[1] && !m[2])) return new Response(Bun.file(path), { headers: { ...base, "content-length": String(size) } });
 
-  const m = range.match(/bytes=(\d*)-(\d*)/);
-  let start = m?.[1] ? Number(m[1]) : 0;
-  let end = m?.[2] ? Math.min(Number(m[2]), size - 1) : size - 1;
-  if (m && !m[1] && m[2]) {
+  let start = m[1] ? Number(m[1]) : 0;
+  let end = m[2] ? Math.min(Number(m[2]), size - 1) : size - 1;
+  if (!m[1] && m[2]) {
     // "bytes=-N" pede os ultimos N bytes, nao os primeiros; "bytes=-0" nao e satisfazivel.
     const suffix = Number(m[2]);
     start = Math.max(0, size - suffix);

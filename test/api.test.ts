@@ -63,3 +63,13 @@ test("Range com inicio e fim continua igual", async () => {
   expect(res.status).toBe(206);
   expect((await res.text()).length).toBe(5);
 });
+
+test("Range invalido e ignorado: 200 com o arquivo inteiro, nao 206", async () => {
+  const full = await (await app.fetch(new Request("http://x/assets/app.css"))).text();
+  for (const value of ["items=0-5", "bytes=abc", "bytes=-", "bytes = 0-4"]) {
+    const res = await range(value);
+    expect(res.status, value).toBe(200);
+    expect(res.headers.get("content-range"), value).toBeNull();
+    expect(await res.text(), value).toBe(full);
+  }
+});
