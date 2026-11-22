@@ -34,6 +34,11 @@ describe("parseVtt", () => {
     expect(cues[0].text).toBe("Tom & Jerry <3 ok 'sim'");
     expect(cues[0].words.map((w) => w.w)).toEqual(["Tom", "&", "Jerry", "<3", "ok", "'sim'"]);
   });
+
+  test("nomes que nao sao entidades, como &constructor;, ficam como estao", () => {
+    const cues = parseVtt("WEBVTT\n\n00:00:01.000 --> 00:00:04.000\nisso &constructor; e &toString; ok &amp;");
+    expect(cues[0].text).toBe("isso &constructor; e &toString; ok &");
+  });
 });
 
 describe("parseJson3", () => {
