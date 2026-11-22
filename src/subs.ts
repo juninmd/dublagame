@@ -43,7 +43,11 @@ const TS = /(?:(\d{1,2}):)?(\d{2}):(\d{2})[.,](\d{3})/g;
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", nbsp: "\u00a0", lrm: "\u200e", rlm: "\u200f", quot: '"', apos: "'" };
 const decodeEntities = (s: string) =>
   s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e: string) => {
-    if (e[0] !== "#") return ENTITIES[e.toLowerCase()] ?? m;
+    if (e[0] !== "#") {
+      const name = e.toLowerCase();
+      // Object.hasOwn: "constructor" e afins sao herdados de Object.prototype, nao entidades.
+      return Object.hasOwn(ENTITIES, name) ? ENTITIES[name] : m;
+    }
     const code = e[1] === "x" || e[1] === "X" ? Number.parseInt(e.slice(2), 16) : Number(e.slice(1));
     return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : m;
   });
